@@ -5,6 +5,7 @@
     },
     "name": "E-appartement",
     "slug": "E-appartement",
+    "icon": "./assets/images/appartement.png",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "myapp",

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -29,6 +30,7 @@ export default function ApartmentsScreen() {
   const [design, setDesign] = useState('');
   const [loyer, setLoyer] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const fetchApartments = async () => {
     try {
@@ -36,6 +38,8 @@ export default function ApartmentsScreen() {
       setApartments(data);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de charger les appartements');
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -85,7 +89,7 @@ export default function ApartmentsScreen() {
     setLoyer(apartment.loyer.toString());
   };
 
-  const handleDelete = async (id: number,name:string) => {
+  const handleDelete = async (id: number, name: string) => {
     Alert.alert(
       'Confirmer la suppression',
       `Êtes-vous sûr de vouloir supprimer ${name} ?`,
@@ -101,12 +105,6 @@ export default function ApartmentsScreen() {
         },
       ]
     );
-    // try {
-    //   await deleteApartment(id);
-    //   fetchApartments();
-    // } catch (error) {
-    //   Alert.alert('Erreur', "Impossible de supprimer l'appartement");
-    // }
   };
 
   const getObservation = (loyer: number) => {
@@ -144,35 +142,41 @@ export default function ApartmentsScreen() {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={apartments}
-        keyExtractor={(item) => item.id?.toString() || ''}
-        renderItem={({ item }) => (
-          <View style={styles.apartmentItem}>
-            <View>
-              <Text style={styles.apartmentText}>N° {item.numApp}</Text>
-              <Text style={styles.apartmentText}>{item.design}</Text>
-              <Text style={styles.apartmentText}>
-                Loyer: {item.loyer} Ariary ({getObservation(item.loyer)})
-              </Text>
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      ) : (
+        <FlatList
+          data={apartments}
+          keyExtractor={(item) => item.id?.toString() || ''}
+          renderItem={({ item }) => (
+            <View style={styles.apartmentItem}>
+              <View>
+                <Text style={styles.apartmentText}>N° {item.numApp}</Text>
+                <Text style={styles.apartmentText}>{item.design}</Text>
+                <Text style={styles.apartmentText}>
+                  Loyer: {item.loyer} Ariary ({getObservation(item.loyer)})
+                </Text>
+              </View>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.editButton]}
+                  onPress={() => handleEdit(item)}
+                >
+                  <Text style={styles.actionButtonText}>Modifier</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.deleteButton]}
+                  onPress={() => handleDelete(item.id!, item.design)}
+                >
+                  <Text style={styles.actionButtonText}>Supprimer</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.editButton]}
-                onPress={() => handleEdit(item)}
-              >
-                <Text style={styles.actionButtonText}>Modifier</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={() => handleDelete(item.id!, item.design)}
-              >
-                <Text style={styles.actionButtonText}>Supprimer</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -182,6 +186,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   form: {
     backgroundColor: 'white',
